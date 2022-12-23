@@ -1,48 +1,33 @@
-import express from 'express'
-import * as dotenv from 'dotenv'
-import cors from 'cors'
-import { Configuration, OpenAIApi } from 'openai'
+import express from 'express';
+import * as dotenv from 'dotenv';
+import cors from 'cors';
+import { Configuration, OpenAIApi } from 'openai';
 
-dotenv.config()
+dotenv.config(); // Load environment variables from .env file
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
+const app = express() // Create a new express app
+const openai = new OpenAIApi(new Configuration({ apiKey: process.env.OPENAI_API_KEY })) // Create a new OpenAI API instance
+
+app.use(cors(), express.json()) // Enable CORS and JSON body parsing
+
+app.get('/', (req, res) => res.status(200).send({ message: 'Hello from CodeX!' })) // Test endpoint
+
+app.post('/', async (req, res) => { // Main endpoint
+  try {
+    const response = await openai.createCompletion({
+      model: 'text-davinci-003', // text-davinci-003 is the best model for now
+      prompt: req.body.prompt, // prompt is the text that the bot will use to generate a response
+      temperature: 0, // temperature is the randomness of the response
+      max_tokens: 3000, // max_tokens is the maximum number of tokens that the bot will generate
+      top_p: 1, // top_p is the probability that the bot will use the next token
+      frequency_penalty: 0.5, // frequency_penalty is the probability that the bot will use the same token
+      presence_penalty: 0, // presence_penalty is the probability that the bot will use the same token
+    });
+    res.status(200).send({ bot: response.data.choices[0].text }); // Send the response to the client
+  } catch (error) {
+    console.error(error); // Log the error
+    res.status(500).send(error || 'Something went wrong'); // Send the error to the client
+  }
 });
 
-const openai = new OpenAIApi(configuration);
-
-const app = express()
-app.use(cors())
-app.use(express.json())
-
-app.get('/', async (req, res) => {
-  res.status(200).send({
-    message: 'Hello from CodeX!'
-  })
-})
-
-app.post('/', async (req, res) => {
-  try {
-    const prompt = req.body.prompt;
-
-    const response = await openai.createCompletion({
-      model: "text-davinci-003",
-      prompt: `${prompt}`,
-      temperature: 0, // Higher values means the model will take more risks.
-      max_tokens: 3000, // The maximum number of tokens to generate in the completion. Most models have a context length of 2048 tokens (except for the newest models, which support 4096).
-      top_p: 1, // alternative to sampling with temperature, called nucleus sampling
-      frequency_penalty: 0.5, // Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
-      presence_penalty: 0, // Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
-    });
-
-    res.status(200).send({
-      bot: response.data.choices[0].text
-    });
-
-  } catch (error) {
-    console.error(error)
-    res.status(500).send(error || 'Something went wrong');
-  }
-})
-
-app.listen(5000, () => console.log('AI server started on http://localhost:5000'))
+app.listen(5000, () => console.log('AI server started on http://localhost:5000')); // Start the server

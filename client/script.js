@@ -1,120 +1,119 @@
-import bot from './assets/bot.svg'
-import user from './assets/user.svg'
+import bot from "./assets/bot.svg";
+import user from "./assets/user.svg";
 
-const form = document.querySelector('form')
-const chatContainer = document.querySelector('#chat_container')
+const form = document.querySelector("form");
+const chatContainer = document.querySelector("#chat_container");
 
-let loadInterval
+let loadInterval;
 
 function loader(element) {
-    element.textContent = ''
+  element.textContent = "";
 
-    loadInterval = setInterval(() => {
-        // Update the text content of the loading indicator
-        element.textContent += '.';
+  loadInterval = setInterval(() => {
+    // Update the text content of the loading indicator
+    element.textContent += ".";
 
-        // If the loading indicator has reached three dots, reset it
-        if (element.textContent === '....') {
-            element.textContent = '';
-        }
-    }, 300);
+    // If the loading indicator has reached three dots, reset it
+    if (element.textContent === "....") {
+      element.textContent = "";
+    }
+  }, 300);
 }
 
-function typeText(element, text) {
-    let index = 0
-
-    let interval = setInterval(() => {
-        if (index < text.length) {
-            element.innerHTML += text.charAt(index)
-            index++
-        } else {
-            clearInterval(interval)
-        }
-    }, 20)
-}
+// function to type out text one character at a time
+const typeText = (element, text) => {
+  let index = 0;
+  // set an interval to add a character to the element's innerHTML every 20 milliseconds
+  let interval = setInterval(() => {
+    // if all characters have been typed out, clear the interval
+    if (index >= text.length) clearInterval(interval);
+    // otherwise, add the next character to the element's innerHTML and increment the index
+    else element.innerHTML += text.charAt(index++);
+  }, 20);
+};
 
 // generate unique ID for each message div of bot
 // necessary for typing text effect for that specific reply
 // without unique ID, typing text will work on every element
-function generateUniqueId() {
-    const timestamp = Date.now();
-    const randomNumber = Math.random();
-    const hexadecimalString = randomNumber.toString(16);
-
-    return `id-${timestamp}-${hexadecimalString}`;
-}
+const generateUniqueId = () => `id-${Date.now()}-${Math.random().toString(16)}`; // // function that generates a unique ID by combining the current timestamp and a random hexadecimal string
 
 function chatStripe(isAi, value, uniqueId) {
-    return (
-        `
-        <div class="wrapper ${isAi && 'ai'}">
+  return `
+        <div class="wrapper ${isAi && "ai"}">
             <div class="chat">
                 <div class="profile">
                     <img 
                       src=${isAi ? bot : user} 
-                      alt="${isAi ? 'bot' : 'user'}" 
+                      alt="${isAi ? "bot" : "user"}" 
                     />
                 </div>
                 <div class="message" id=${uniqueId}>${value}</div>
             </div>
         </div>
-    `
-    )
+    `;
 }
 
 const handleSubmit = async (e) => {
-    e.preventDefault()
+  // prevent default form submission
+  e.preventDefault();
 
-    const data = new FormData(form)
+  // retrieve form data
+  const data = new FormData(form);
 
-    // user's chatstripe
-    chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+  // add user's chatstripe to chat container
+  chatContainer.innerHTML += chatStripe(false, data.get("prompt"));
 
-    // to clear the textarea input 
-    form.reset()
+  // clear textarea input
+  form.reset();
 
-    // bot's chatstripe
-    const uniqueId = generateUniqueId()
-    chatContainer.innerHTML += chatStripe(true, " ", uniqueId)
+  // generate unique ID for bot's chatstripe
+  const uniqueId = generateUniqueId();
 
-    // to focus scroll to the bottom 
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  // add bot's chatstripe to chat container
+  chatContainer.innerHTML += chatStripe(true, " ", uniqueId);
 
-    // specific message div 
-    const messageDiv = document.getElementById(uniqueId)
+  // scroll to the bottom of chat container
+  chatContainer.scrollTop = chatContainer.scrollHeight;
 
-    // messageDiv.innerHTML = "..."
-    loader(messageDiv)
+  // retrieve specific message div
+  const messageDiv = document.getElementById(uniqueId);
 
-    const response = await fetch('https://codex-im0y.onrender.com/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            prompt: data.get('prompt')
-        })
-    })
+  // display loading indicator in message div
+  loader(messageDiv);
 
-    clearInterval(loadInterval)
-    messageDiv.innerHTML = " "
+  // send POST request to server
+  const response = await fetch("https://codex-im0y.onrender.com/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      prompt: data.get("prompt"),
+    }),
+  });
 
-    if (response.ok) {
-        const data = await response.json();
-        const parsedData = data.bot.trim() // trims any trailing spaces/'\n' 
+  // clear loading indicator
+  clearInterval(loadInterval);
+  messageDiv.innerHTML = " ";
 
-        typeText(messageDiv, parsedData)
-    } else {
-        const err = await response.text()
+  // if request was successful, display bot's response in message div
+  if (response.ok) {
+    const data = await response.json();
+    const parsedData = data.bot.trim(); // trim any trailing spaces/'\n'
 
-        messageDiv.innerHTML = "Something went wrong"
-        alert(err)
-    }
-}
+    typeText(messageDiv, parsedData);
+  } else {
+    // if request failed, display error message and alert user
+    const err = await response.text();
+    messageDiv.innerHTML = "Something went wrong";
+    alert(err);
+  }
+};
 
-form.addEventListener('submit', handleSubmit)
-form.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13) {
-        handleSubmit(e)
-    }
-})
+form.addEventListener("submit", handleSubmit);
+form.addEventListener("keyup", (e) => {
+  // if user presses enter key
+  if (e.key === "Enter") {
+    handleSubmit(e);
+  }
+});
