@@ -1,6 +1,6 @@
 
 
-# Build and Deploy Your Own ChatGPT AI Application That Will Help You Code
+# Build and Deploy Your Own ChatGPT AI with audio Application That Will Help You Code
 ## A Few Screenshots
 
 ![Open AI CodeGPT](https://i.ibb.co/LS4DRhb/image-257.png)
@@ -21,11 +21,11 @@ Run npm install
 
 - Create .env file inside server folder and paste your generated key
 
-##inside server
+#inside server
 ``
 Run npm run server
 ``
-##inside client
+#inside client
 ``
 Run npm run dev
 ``
