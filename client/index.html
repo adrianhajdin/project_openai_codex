@@ -9,10 +9,12 @@
   </head>
   <body>
     <div id="app">
-      <div id="chat_container"></div>
+      <div class="chat_container" id="chat_container"></div>
 
       <form>
-        <textarea name="prompt" rows="1" cols="1" placeholder="Ask codex..."></textarea>
+        <img id="micOn" src="assets/microphone-off.svg" alt="mic off" />
+        <img id="micOff" style="display: none;" src="assets/microphone-on.svg" alt="mic ff" />
+        <textarea id="prompt" name="prompt" rows="1" cols="1" placeholder="Ask codex..."></textarea>
         <button type="submit"><img src="assets/send.svg" alt="send" />
       </form>
     </div>
