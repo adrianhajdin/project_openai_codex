@@ -5,6 +5,8 @@ const form = document.querySelector('form')
 const chatContainer = document.querySelector('#chat_container')
 
 let loadInterval
+let speechRecognition = null;
+
 
 function loader(element) {
     element.textContent = ''
@@ -72,20 +74,20 @@ function micControl(isRecording){
         document.querySelector("#micOn").style.display = "inline";
         document.querySelector("#micOff").style.display = "none";
     }
-    
+    speechRecognition.stop(); 
    
 }
 
 function speechText(){
     if ("webkitSpeechRecognition" in window) {
         // Initialize webkitSpeechRecognition
-        let speechRecognition = new webkitSpeechRecognition();
+         speechRecognition = new webkitSpeechRecognition();
       
         // String for the Final Transcript
         let final_transcript = "";
       
         // Set the properties for the Speech Recognition object
-        speechRecognition.continuous = true;
+        speechRecognition.continuous = false;
         speechRecognition.interimResults = true;
       
         // Callback Function for the onStart Event
@@ -117,26 +119,29 @@ function speechText(){
           }
       
           // Set the Final transcript and Interim transcript.
-         var final = document.querySelector("#prompt").innerHTML = final_transcript+''+interim_transcript;
+        document.querySelector("#prompt").innerHTML = final_transcript+''+interim_transcript;
          // var interim = document.querySelector("#interim").innerHTML = interim_transcript;
-         // console.log(final)
-         // console.log(interim)
+         speechRecognition.stop();
         };
       
-        // Set the onClick property of the start button
-        document.querySelector("#micOn").onclick = () => {
-          // Start the Speech Recognition
-          speechRecognition.start();
-        };
-        // Set the onClick property of the stop button
-        document.querySelector("#micOff").onclick = () => {
-          // Stop the Speech Recognition
-          speechRecognition.stop();
-        };
       } else {
         console.log("Speech Recognition Not Available");
       }
 }
+
+ // Set the onClick property of the start button
+ document.querySelector("#micOn").onclick = () => {
+   
+    speechText();
+    // Start the Speech Recognition
+    speechRecognition.start();
+  };
+  // Set the onClick property of the stop button
+  document.querySelector("#micOff").onclick = () => {
+    // Stop the Speech Recognition
+    speechText();
+    speechRecognition.stop();
+  };
 
 const handleSubmit = async (e) => {
     e.preventDefault()
@@ -148,7 +153,7 @@ const handleSubmit = async (e) => {
 
     // to clear the textarea input 
     form.reset()
-    document.querySelector("#prompt").value ='';
+    document.querySelector("#prompt").value= '';
     micControl(false);
 
     // bot's chatstripe
@@ -189,13 +194,17 @@ const handleSubmit = async (e) => {
         messageDiv.innerHTML = "Something went wrong"
         alert(err)
     }
+
+    speechRecognition.abort();
+    speechRecognition.stop();
 }
 
-speechText();
+
 
 form.addEventListener('submit', handleSubmit)
 form.addEventListener('keyup', (e) => {
     if (e.keyCode === 13) {
         handleSubmit(e)
     }
+    speechRecognition.abort();
 })
