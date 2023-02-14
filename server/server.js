@@ -27,7 +27,7 @@ app.post('/', async (req, res) => {
 
     const response = await openai.createCompletion({
       model: "text-davinci-003",
-      prompt: `keep all context of response around health, fitness, eating healthy, healthy meals, training and mindfulness. do not answer question on other topics. if asked about memberships or prices to any gym or fitness direct responsed with <a href="https://www.plmfitness.com/category/memberships">Memberships</a> ${prompt}`,
+      prompt: `keep all context of response around health, fitness, eating healthy, healthy meals, training and mindfulness. do not answer question on other topics. if asked about memberships or prices to any gym direct to href="https://www.plmfitness.com/category/memberships" ${prompt}`,
       temperature: 0, // Higher values means the model will take more risks.
       max_tokens: 200, // The maximum number of tokens to generate in the completion. Most models have a context length of 2048 tokens (except for the newest models, which support 4096).
       top_p: 1, // alternative to sampling with temperature, called nucleus sampling
