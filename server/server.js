@@ -26,7 +26,7 @@ app.post('/', async (req, res) => {
     const prompt = req.body.prompt;
 
     const response = await openai.createCompletion({
-      model: "gpt-3.5-turbo",
+      model: "text-davinci-003",
       prompt: `keep all context of response around health, fitness, eating healthy, healthy meals, training and mindfulness. do not answer question on other topics. For any memberships or prices direct to PLM website. For any billing questions email Info@plmfitness.com. ${prompt}`,
       temperature: 0, // Higher values means the model will take more risks.
       max_tokens: 200, // The maximum number of tokens to generate in the completion. Most models have a context length of 2048 tokens (except for the newest models, which support 4096).
