@@ -68,7 +68,18 @@ const handleSubmit = async (e) => {
     const data = new FormData(form)
 
     // user's chatstripe
-    chatContainer.innerHTML += chatStripe(false, data.get('prompt'))
+    chatContainer.innerHTML += chatStripe(false, data.get('message'))
+
+    // Create the messages array
+    const messages = [{ role: "system", content: "You are a helpful assistant." }];
+
+    // Add all the messages from chatContainer to the messages array
+    chatContainer.querySelectorAll('.message').forEach((message) => {
+        messages.push({
+            role: message.id.startsWith('id') ? 'assistant' : 'user',
+            content: message.innerText.trim(),
+        });
+    });
 
     // to clear the textarea input 
     form.reset()
@@ -86,13 +97,15 @@ const handleSubmit = async (e) => {
     // messageDiv.innerHTML = "..."
     loader(messageDiv)
 
-    const response = await fetch('https://codex-im0y.onrender.com/', {
+    // console.log(messages);
+
+    const response = await fetch('http://localhost:5000', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            prompt: data.get('prompt')
+            messages: messages
         })
     })
 
@@ -101,7 +114,7 @@ const handleSubmit = async (e) => {
 
     if (response.ok) {
         const data = await response.json();
-        const parsedData = data.bot.trim() // trims any trailing spaces/'\n' 
+        const parsedData = data.ai.trim() // trims any trailing spaces/'\n' 
 
         typeText(messageDiv, parsedData)
     } else {
@@ -114,7 +127,9 @@ const handleSubmit = async (e) => {
 
 form.addEventListener('submit', handleSubmit)
 form.addEventListener('keyup', (e) => {
-    if (e.keyCode === 13) {
+
+    // If CTRL + ENTER is pressed
+    if (e.key === 'Enter' && e.ctrlKey) {
         handleSubmit(e)
     }
 })
